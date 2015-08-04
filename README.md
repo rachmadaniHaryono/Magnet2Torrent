@@ -9,6 +9,9 @@ A command line tool that converts magnet links in to .torrent files.
 ## How to Use
 `python Magnet_To_Torrent2.py <magnet link> [torrent file]`
 
+## To install libtorrent-python on Mac
+`brew install libtorrent-rasterbar --with-python`
+
 ### Example
 `python Magnet_To_Torrent2.py "magnet:?xt=urn:btih:49fbd26322960d982da855c54e36df19ad3113b8&dn=ubuntu-12.04-desktop-i386.iso&tr=udp%3A%2F%2Ftracker.openbittorrent.com" ubunut12-04.iso`
 
