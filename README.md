@@ -32,6 +32,9 @@ optional arguments:
     --skip-file           Skip file if file already exist.
     --open-file           Open file after conferting.
 
+## To install libtorrent-python on Mac
+`brew install libtorrent-rasterbar --with-python`
+
 ### Example
 `python Magnet_To_Torrent2.py -m "magnet:?xt=urn:btih:49fbd26322960d982da855c54e36df19ad3113b8&dn=ubuntu-12.04-desktop-i386.iso&tr=udp%3A%2F%2Ftracker.openbittorrent.com" -o ubunut12-04.iso`
 
