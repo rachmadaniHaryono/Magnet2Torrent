@@ -41,19 +41,38 @@ def magnet2torrent(magnet, output_name=None):
 
     tempdir = tempfile.mkdtemp()
     ses = lt.session()
+    # one could want to set this
+    #ses.listen_on(6881, 6882)
+    
+    # add 'url'. for add_torrent()
     params = {
+        'url': magnet,
         'save_path': tempdir,
         'storage_mode': lt.storage_mode_t(2),
         'paused': False,
         'auto_managed': True,
         'duplicate_is_error': True
     }
-    handle = lt.add_magnet_uri(ses, magnet, params)
+    # add_magnet_uri is deprecated
+    # http://www.rasterbar.com/products/libtorrent/manual.html#add-magnet-uri
+    #handle = lt.add_magnet_uri(ses, magnet, params)
+    handle = ses.add_torrent(params)
 
     print("Downloading Metadata (this may take a while)")
+    
+    # used to control "Maybe..." and "or the" msgs
+    # after sleep(1)
+    x = 1
+    limit = 120
+    
     while (not handle.has_metadata()):
         try:
             sleep(1)
+            if x > limit:
+                print("Maybe your firewall is blocking, ")
+                print("     or the magnet link is not right...")
+                limit += 30
+            x += 1
         except KeyboardInterrupt:
             print("Aborting...")
             ses.pause()
