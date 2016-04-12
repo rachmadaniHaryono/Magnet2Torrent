@@ -125,7 +125,7 @@ def main():
                         dest='skip_file', action='store_true')
     parser.set_defaults(skip_file=False)
     # open file after creating torrent file
-    parser.add_argument('--open-file', help='Open file after conferting.',
+    parser.add_argument('--open-file', help='Open file after converting.',
                         dest='open_file', action='store_true')
     parser.set_defaults(open_file=False)
     args = parser.parse_args(sys.argv[1:])
