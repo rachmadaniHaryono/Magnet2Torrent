@@ -30,6 +30,7 @@ import sys
 import tempfile
 from argparse import ArgumentParser
 from time import sleep
+from os.path import isfile, splitext
 try:
     from urllib.parse import unquote
 except ImportError:
@@ -100,6 +101,12 @@ def main():
     parser = ArgumentParser(description=description)
     parser.add_argument('-m', '--magnet', help='The magnet url', required=True)
     parser.add_argument('-o', '--output', help='The output torrent file name')
+    parser.add_argument('--rewrite-file', help='Rewrite torrent file if exist(default)',
+                        dest='rewrite_file', action='store_true')
+    parser.add_argument('--no-rewrite-file',
+                        help='Create a new filename if torrent exist.',
+                        dest='rewrite_file', action='store_false')
+    parser.set_defaults(rewrite_file=True)
     args = parser.parse_args(sys.argv[1:])
     output_name = args.output
     magnet = args.magnet
@@ -111,6 +118,19 @@ def main():
         if '+' in output_name:
             output_name = unquote(output_name)
         output_name += '.torrent'
+
+    # create fullname if file exist.
+    if isfile(output_name) and not args.rewrite_file:
+        new_output_name = output_name
+        counter = 1
+        while isfile(new_output_name):
+            non_basename, non_ext = splitext(new_output_name)
+            if counter - 1 != 0:
+                non_basename = non_basename.rsplit('_{}'.format(counter - 1), 1)[0]
+            non_basename += '_{}'.format(counter)
+            new_output_name = '{}{}'.format(non_basename, non_ext)
+            counter += 1
+        output_name = new_output_name
 
     # encode magnet link if it appear url decoded.
     if magnet != unquote(magnet):
