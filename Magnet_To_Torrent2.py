@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 """convert magnet link to torrent file.
 
-Created on Apr 19, 2012
-@author: dan, Faless
-
+Created on Apr 19, 2012 @author: dan, Faless
     GNU GENERAL PUBLIC LICENSE - Version 3
 
     This program is free software: you can redistribute it and/or modify
@@ -51,8 +49,8 @@ def magnet2torrent(magnet, output_name=None):
     tempdir = tempfile.mkdtemp()
     ses = lt.session()
     # one could want to set this
-    #ses.listen_on(6881, 6882)
-    
+    # ses.listen_on(6881, 6882)
+
     # add 'url'. for add_torrent()
     params = {
         'url': magnet,
@@ -64,16 +62,20 @@ def magnet2torrent(magnet, output_name=None):
     }
     # add_magnet_uri is deprecated
     # http://www.rasterbar.com/products/libtorrent/manual.html#add-magnet-uri
-    #handle = lt.add_magnet_uri(ses, magnet, params)
-    handle = ses.add_torrent(params)
+    # handle = lt.add_magnet_uri(ses, magnet, params)
+    try:
+        handle = ses.add_torrent(params)
+    except RuntimeError:
+        params['duplicate_is_error'] = False
+        handle = ses.add_torrent(params)
 
     print("Downloading Metadata (this may take a while)")
-    
+
     # used to control "Maybe..." and "or the" msgs
     # after sleep(1)
     x = 1
     limit = 120
-    
+
     while (not handle.has_metadata()):
         try:
             sleep(1)
