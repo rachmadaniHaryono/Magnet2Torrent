@@ -24,8 +24,10 @@ Created on Apr 19, 2012
 """
 
 import libtorrent as lt
+import os
 import os.path as pt
 import shutil
+import subprocess
 import sys
 import tempfile
 from argparse import ArgumentParser
@@ -94,6 +96,16 @@ def magnet2torrent(magnet, output_name=None):
     return output
 
 
+def open_file(filepath):
+    """open filepath with default application for each operating system."""
+    if sys.platform.startswith('darwin'):
+        subprocess.call(('open', filepath))
+    elif os.name == 'nt':
+        os.startfile(filepath)
+    elif os.name == 'posix':
+        subprocess.call(('xdg-open', filepath))
+
+
 def main():
     """main function."""
     # parsing the argument.
@@ -112,6 +124,10 @@ def main():
     parser.add_argument('--skip-file', help='Skip file if file already exist.',
                         dest='skip_file', action='store_true')
     parser.set_defaults(skip_file=False)
+    # open file after creating torrent file
+    parser.add_argument('--open-file', help='Open file after conferting.',
+                        dest='open_file', action='store_true')
+    parser.set_defaults(open_file=False)
     args = parser.parse_args(sys.argv[1:])
     output_name = args.output
     magnet = args.magnet
@@ -127,6 +143,9 @@ def main():
     # return if user want to skip existing file.
     if isfile(output_name) and args.skip_file:
         print('File [{}] is already exist.'.format(output_name))
+        # still open file if file already existed.
+        if args.open_file:
+            open_file(output_name)
         return
 
     # create fullname if file exist.
@@ -148,6 +167,9 @@ def main():
 
     # run the converter
     magnet2torrent(magnet, output_name)
+
+    if args.open_file:
+        open_file(output_name)
 
 
 if __name__ == "__main__":
