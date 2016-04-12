@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-'''
+"""convert magnet link to torrent file.
+
 Created on Apr 19, 2012
 @author: dan, Faless
 
@@ -20,18 +21,23 @@ Created on Apr 19, 2012
 
     http://www.gnu.org/licenses/gpl-3.0.txt
 
-'''
+"""
 
-import shutil
-import tempfile
-import os.path as pt
-import sys
 import libtorrent as lt
-from time import sleep
+import os.path as pt
+import shutil
+import sys
+import tempfile
 from argparse import ArgumentParser
+from time import sleep
+try:
+    from urllib.parse import unquote
+except ImportError:
+    from urllib import unquote
 
 
 def magnet2torrent(magnet, output_name=None):
+    """convert magent2torrent."""
     if output_name and \
             not pt.isdir(output_name) and \
             not pt.isdir(pt.dirname(pt.abspath(output_name))):
@@ -76,7 +82,7 @@ def magnet2torrent(magnet, output_name=None):
             output = pt.abspath(output_name)
 
     print("Saving torrent file here : " + output + " ...")
-    torcontent = lt.bencode(torfile.generate())
+    # torcontent = lt.bencode(torfile.generate())  # not used
     f = open(output, "wb")
     f.write(lt.bencode(torfile.generate()))
     f.close()
@@ -86,57 +92,31 @@ def magnet2torrent(magnet, output_name=None):
 
     return output
 
+
 def main():
-    parser = ArgumentParser(description="A command line tool that converts magnet links in to .torrent files")
-    parser.add_argument('-m','--magnet', help='The magnet url')
-    parser.add_argument('-o','--output', help='The output torrent file name')
+    """main function."""
+    # parsing the argument.
+    description = "A command line tool that converts magnet links in to .torrent files"
+    parser = ArgumentParser(description=description)
+    parser.add_argument('-m', '--magnet', help='The magnet url', required=True)
+    parser.add_argument('-o', '--output', help='The output torrent file name')
+    args = parser.parse_args(sys.argv[1:])
+    output_name = args.output
+    magnet = args.magnet
 
-    #
-    # This second parser is created to force the user to provide
-    # the 'output' arg if they provide the 'magnet' arg.
-    #
-    # The current version of argparse does not have support
-    # for conditionally required arguments. That is the reason
-    # for creating the second parser
-    #
-    # Side note: one should look into forking argparse and adding this
-    # feature.
-    #
-    conditionally_required_arg_parser = ArgumentParser(description="A command line tool that converts magnet links in to .torrent files")
-    conditionally_required_arg_parser.add_argument('-m','--magnet', help='The magnet url')
-    conditionally_required_arg_parser.add_argument('-o','--output', help='The output torrent file name', required=True)
+    # guess the name if output name is not given.
+    # in magnet link it is between'&dn' and '&tr'
+    if output_name is None:
+        output_name = magnet.split('&dn=')[1].split('&tr')[0]
+        if '+' in output_name:
+            output_name = unquote(output_name)
+        output_name += '.torrent'
 
-    magnet = None
-    output_name = None
+    # encode magnet link if it appear url decoded.
+    if magnet != unquote(magnet):
+        magnet = unquote(magnet)
 
-    #
-    # Attempting to retrieve args using the new method
-    #
-    args = vars(parser.parse_known_args()[0])
-    if args['magnet'] is not None:
-        magnet = args['magnet']
-        argsHack = vars(conditionally_required_arg_parser.parse_known_args()[0])
-        output_name = argsHack['output']
-    if args['output'] is not None and output_name is None:
-        output_name = args['output']
-        if magnet is None:
-            #
-            # This is a special case.
-            # This is when the user provides only the "output" args.
-            # We're forcing him to provide the 'magnet' args in the new method
-            #
-            print ('usage: {0} [-h] [-m MAGNET] -o OUTPUT'.format(sys.argv[0]))
-            print ('{0}: error: argument -m/--magnet is required'.format(sys.argv[0]))
-            sys.exit()
-    #
-    # Defaulting to the old of doing things
-    # 
-    if output_name is None and magnet is None:
-        if len(sys.argv) >= 2:
-            magnet = sys.argv[1]
-        if len(sys.argv) >= 3:
-            output_name = sys.argv[2]
-
+    # run the converter
     magnet2torrent(magnet, output_name)
 
 
