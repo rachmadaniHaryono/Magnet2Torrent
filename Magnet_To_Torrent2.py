@@ -101,12 +101,17 @@ def main():
     parser = ArgumentParser(description=description)
     parser.add_argument('-m', '--magnet', help='The magnet url', required=True)
     parser.add_argument('-o', '--output', help='The output torrent file name')
+    # rewrite file option
     parser.add_argument('--rewrite-file', help='Rewrite torrent file if exist(default)',
                         dest='rewrite_file', action='store_true')
     parser.add_argument('--no-rewrite-file',
                         help='Create a new filename if torrent exist.',
                         dest='rewrite_file', action='store_false')
     parser.set_defaults(rewrite_file=True)
+    # Skip file if exist option
+    parser.add_argument('--skip-file', help='Skip file if file already exist.',
+                        dest='skip_file', action='store_true')
+    parser.set_defaults(skip_file=False)
     args = parser.parse_args(sys.argv[1:])
     output_name = args.output
     magnet = args.magnet
@@ -118,6 +123,11 @@ def main():
         if '+' in output_name:
             output_name = unquote(output_name)
         output_name += '.torrent'
+
+    # return if user want to skip existing file.
+    if isfile(output_name) and args.skip_file:
+        print('File [{}] is already exist.'.format(output_name))
+        return
 
     # create fullname if file exist.
     if isfile(output_name) and not args.rewrite_file:
@@ -141,4 +151,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
