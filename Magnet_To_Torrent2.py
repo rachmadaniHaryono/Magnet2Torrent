@@ -37,84 +37,104 @@ except ImportError:
     from urllib import unquote
 
 
-def magnet2torrent(magnet, output_name=None):
-    """convert magent2torrent."""
-    if output_name and \
-            not pt.isdir(output_name) and \
-            not pt.isdir(pt.dirname(pt.abspath(output_name))):
-        print("Invalid output folder: " + pt.dirname(pt.abspath(output_name)))
-        print("")
-        sys.exit(0)
+class Magnet2Torrent:
+    """class for converter from magnet link to torrent."""
 
-    tempdir = tempfile.mkdtemp()
-    ses = lt.session()
-    # one could want to set this
-    # ses.listen_on(6881, 6882)
+    def __init__(self, magnet, output_name=None):
+        """init function.
 
-    # add 'url'. for add_torrent()
-    params = {
-        'url': magnet,
-        'save_path': tempdir,
-        'storage_mode': lt.storage_mode_t(2),
-        'paused': False,
-        'auto_managed': True,
-        'duplicate_is_error': True
-    }
-    # add_magnet_uri is deprecated
-    # http://www.rasterbar.com/products/libtorrent/manual.html#add-magnet-uri
-    # handle = lt.add_magnet_uri(ses, magnet, params)
-    try:
-        handle = ses.add_torrent(params)
-    except RuntimeError:
-        params['duplicate_is_error'] = False
-        handle = ses.add_torrent(params)
+        check for validity of the input.
 
-    print("Downloading Metadata (this may take a while)")
+        Raises:
+            ValueError: if input is not valid this error will be raise
+        """
+        if output_name and \
+                not pt.isdir(output_name) and \
+                not pt.isdir(pt.dirname(pt.abspath(output_name))):
+            raise ValueError("Invalid output folder: " + pt.dirname(pt.abspath(output_name)))
+        self.output_name = output_name
+        # create tempdir
+        self.tempdir = tempfile.mkdtemp()
+        # create session
+        self.ses = lt.session()
+        # one could want to set this
+        # ses.listen_on(6881, 6882)
 
-    # used to control "Maybe..." and "or the" msgs
-    # after sleep(1)
-    x = 1
-    limit = 120
-
-    while (not handle.has_metadata()):
+        # add 'url'. for add_torrent()
+        params = {
+            'url': magnet,
+            'save_path': self.tempdir,
+            'storage_mode': lt.storage_mode_t(2),
+            'paused': False,
+            'auto_managed': True,
+            'duplicate_is_error': True
+        }
+        # add_magnet_uri is deprecated
+        # http://www.rasterbar.com/products/libtorrent/manual.html#add-magnet-uri
+        # handle = lt.add_magnet_uri(ses, magnet, params)
         try:
-            sleep(1)
-            if x > limit:
-                print("Maybe your firewall is blocking, ")
-                print("     or the magnet link is not right...")
-                limit += 30
-            x += 1
-        except KeyboardInterrupt:
-            print("Aborting...")
-            ses.pause()
-            print("Cleanup dir " + tempdir)
-            shutil.rmtree(tempdir)
-            sys.exit(0)
-    ses.pause()
-    print("Done")
+            self.handle = self.ses.add_torrent(params)
+        except RuntimeError:
+            params['duplicate_is_error'] = False
+            self.handle = self.ses.add_torrent(params)
 
-    torinfo = handle.get_torrent_info()
-    torfile = lt.create_torrent(torinfo)
+    def run(self):
+        """run the converter.
 
-    output = pt.abspath(torinfo.name() + ".torrent")
+        using the class attribute initiated at init function.
 
-    if output_name:
-        if pt.isdir(output_name):
-            output = pt.abspath(pt.join(
-                output_name, torinfo.name() + ".torrent"))
-        elif pt.isdir(pt.dirname(pt.abspath(output_name))):
-            output = pt.abspath(output_name)
+        Returns:
+            Filename of created torrent.
 
-    print("Saving torrent file here : " + output + " ...")
-    # torcontent = lt.bencode(torfile.generate())  # not used
-    f = open(output, "wb")
-    f.write(lt.bencode(torfile.generate()))
-    f.close()
-    print("Saved! Cleaning up dir: " + tempdir)
-    ses.remove_torrent(handle)
-    shutil.rmtree(tempdir)
+        Raises:
+            KeyboardInterrupt: This error caused by user to stop this.
+            When downloading metada from magnet link,
+            it require additional step before the error reraised again.
+        """
+        print("Downloading Metadata (this may take a while)")
+        # used to control "Maybe..." and "or the" msgs
+        # after sleep(1)
+        x = 1
+        limit = 120
 
-    return output
+        while (not self.handle.has_metadata()):
+            try:
+                sleep(1)
+                if x > limit:
+                    print("Maybe your firewall is blocking, ")
+                    print("     or the magnet link is not right...")
+                    limit += 30
+                x += 1
+            except KeyboardInterrupt as ee:
+                print("Aborting...")
+                self.ses.pause()
+                print("Cleanup dir " + self.tempdir)
+                shutil.rmtree(self.tempdir)
+                raise ee
+        self.ses.pause()
+        print("Done")
+
+        torinfo = self.handle.get_torrent_info()
+        torfile = lt.create_torrent(torinfo)
+
+        output = pt.abspath(torinfo.name() + ".torrent")
+
+        if self.output_name:
+            if pt.isdir(self.output_name):
+                output = pt.abspath(pt.join(self.output_name, torinfo.name() + ".torrent"))
+            elif pt.isdir(pt.dirname(pt.abspath(self.output_name))):
+                output = pt.abspath(self.output_name)
+
+        print("Saving torrent file here : " + output + " ...")
+        # torcontent = lt.bencode(torfile.generate())  # not used
+        f = open(output, "wb")
+        f.write(lt.bencode(torfile.generate()))
+        f.close()
+        print("Saved! Cleaning up dir: " + self.tempdir)
+        self.ses.remove_torrent(self.handle)
+        shutil.rmtree(self.tempdir)
+
+        return output
 
 
 def open_file(filepath):
@@ -187,7 +207,8 @@ def main():
         magnet = unquote(magnet)
 
     # run the converter
-    magnet2torrent(magnet, output_name)
+    conv = Magnet2Torrent(magnet, output_name)
+    conv.run()
 
     if args.open_file:
         open_file(output_name)
