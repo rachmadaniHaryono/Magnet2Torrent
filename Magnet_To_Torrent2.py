@@ -67,16 +67,9 @@ class Magnet2Torrent:
             'storage_mode': lt.storage_mode_t(2),
             'paused': False,
             'auto_managed': True,
-            'duplicate_is_error': True
+            'duplicate_is_error': False
         }
-        # add_magnet_uri is deprecated
-        # http://www.rasterbar.com/products/libtorrent/manual.html#add-magnet-uri
-        # handle = lt.add_magnet_uri(ses, magnet, params)
-        try:
-            self.handle = self.ses.add_torrent(params)
-        except RuntimeError:
-            params['duplicate_is_error'] = False
-            self.handle = self.ses.add_torrent(params)
+        self.handle = self.ses.add_torrent(params)
 
     def run(self):
         """run the converter.
