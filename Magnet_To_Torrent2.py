@@ -21,7 +21,6 @@ Created on Apr 19, 2012 @author: dan, Faless
 
 """
 
-import libtorrent as lt
 import os
 import os.path as pt
 import shutil
@@ -30,11 +29,11 @@ import sys
 import tempfile
 from argparse import ArgumentParser
 from time import sleep
-from os.path import isfile, splitext
 try:
     from urllib.parse import unquote
 except ImportError:
     from urllib import unquote
+import libtorrent as lt
 
 
 class Magnet2Torrent:
@@ -90,7 +89,7 @@ class Magnet2Torrent:
         x = 1
         limit = 120
 
-        while (not self.handle.has_metadata()):
+        while not self.handle.has_metadata():
             try:
                 sleep(1)
                 if x > limit:
@@ -98,12 +97,12 @@ class Magnet2Torrent:
                     print("     or the magnet link is not right...")
                     limit += 30
                 x += 1
-            except KeyboardInterrupt as ee:
+            except KeyboardInterrupt:
                 print("Aborting...")
                 self.ses.pause()
                 print("Cleanup dir " + self.tempdir)
                 shutil.rmtree(self.tempdir)
-                raise ee
+                raise
         self.ses.pause()
         print("Done")
 
@@ -175,7 +174,7 @@ def main():
         output_name += '.torrent'
 
     # return if user want to skip existing file.
-    if isfile(output_name) and args.skip_file:
+    if pt.isfile(output_name) and args.skip_file:
         print('File [{}] is already exist.'.format(output_name))
         # still open file if file already existed.
         if args.open_file:
@@ -183,11 +182,11 @@ def main():
         return
 
     # create fullname if file exist.
-    if isfile(output_name) and not args.rewrite_file:
+    if pt.isfile(output_name) and not args.rewrite_file:
         new_output_name = output_name
         counter = 1
-        while isfile(new_output_name):
-            non_basename, non_ext = splitext(new_output_name)
+        while pt.isfile(new_output_name):
+            non_basename, non_ext = pt.splitext(new_output_name)
             if counter - 1 != 0:
                 non_basename = non_basename.rsplit('_{}'.format(counter - 1), 1)[0]
             non_basename += '_{}'.format(counter)
