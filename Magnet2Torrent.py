@@ -87,7 +87,7 @@ class Magnet2Torrent(object):
             try:
                 sleep(1)
                 if wait_time > soft_limit:
-                    print("Download is taking a long time, maybe there is an "
+                    print("Downloading is taking a while, maybe there is an "
                           "issue with the magnet link or your network connection")
                     soft_limit += 30
                 wait_time += 1
@@ -107,7 +107,8 @@ class Magnet2Torrent(object):
 
         if self.output_name:
             if pt.isdir(self.output_name):
-                output = pt.abspath(pt.join(self.output_name, torinfo.name() + ".torrent"))
+                output = pt.abspath(pt.join(self.output_name,
+                                            torinfo.name() + ".torrent"))
             elif pt.isdir(pt.dirname(pt.abspath(self.output_name))):
                 output = pt.abspath(self.output_name)
 
@@ -135,17 +136,19 @@ def open_default_app(filepath):
 
 def parse_args(args):
     """parse some commandline arguments"""
-    description = "A command line tool that converts magnet links in to .torrent files"
+    description = ("A command line tool that converts "
+                   "magnet links into .torrent files")
     parser = ArgumentParser(description=description)
     parser.add_argument('-m', '--magnet', help='The magnet url', required=True)
     parser.add_argument('-o', '--output', help='The output torrent file name')
-    parser.add_argument('--rewrite-file', help='Rewrite torrent file if exist(default)',
+    parser.add_argument('--rewrite-file',
+                        help='Rewrite torrent file if already exists(default)',
                         dest='rewrite_file', action='store_true')
     parser.add_argument('--no-rewrite-file',
-                        help='Create a new filename if torrent exist.',
+                        help='Create a new filename if torrent exists.',
                         dest='rewrite_file', action='store_false')
     parser.set_defaults(rewrite_file=True)
-    parser.add_argument('--skip-file', help='Skip file if file already exist.',
+    parser.add_argument('--skip-file', help='Skip file if it already exists.',
                         dest='skip_file', action='store_true', default=False)
     parser.add_argument('--open-file', help='Open file after converting.',
                         dest='open_file', action='store_true', default=False)
@@ -155,28 +158,27 @@ def parse_args(args):
 
 def main():
     """main function."""
-    # parsing the argument.
     args = parse_args(sys.argv[1:])
     output_name = args.output
     magnet = args.magnet
 
     # guess the name if output name is not given.
-    # in magnet link it is between'&dn' and '&tr'
+    # in a magnet link it is between '&dn' and '&tr'
     if output_name is None:
         output_name = magnet.split('&dn=')[1].split('&tr')[0]
         if '+' in output_name:
             output_name = unquote(output_name)
         output_name += '.torrent'
 
-    # return if user want to skip existing file.
+    # return if user wants to skip existing file.
     if pt.isfile(output_name) and args.skip_file:
-        print('File [{}] is already exist.'.format(output_name))
-        # still open file if file already existed.
+        print('File [{}] already exists.'.format(output_name))
+        # still open file if file already exists.
         if args.open_file:
             open_default_app(output_name)
         return
 
-    # create fullname if file exist.
+    # create fullname if file exists.
     if pt.isfile(output_name) and not args.rewrite_file:
         new_output_name = output_name
         counter = 1
@@ -189,11 +191,10 @@ def main():
             counter += 1
         output_name = new_output_name
 
-    # encode magnet link if it appear url decoded.
+    # encode magnet link if it's url decoded.
     if magnet != unquote(magnet):
         magnet = unquote(magnet)
 
-    # run the converter
     conv = Magnet2Torrent(magnet, output_name)
     conv.run()
 
