@@ -55,7 +55,6 @@ class Magnet2Torrent(object):
         self.tempdir = tempfile.mkdtemp()
         self.ses = lt.session()
 
-        # add 'url'. for add_torrent()
         params = {
             'url': magnet,
             'save_path': self.tempdir,
@@ -76,15 +75,14 @@ class Magnet2Torrent(object):
 
         Raises:
             KeyboardInterrupt: This error caused by user to stop this.
-            When downloading metada from magnet link,
-            it require additional step before the error reraised again.
+            When downloading metadata from magnet link,
+            it requires an additional step before the error reraised again.
         """
         print("Downloading Metadata (this may take a while)")
-        # used to control "Maybe..." and "or the" msgs
-        # after sleep(1)
+
+        # used to control "Maybe..." and "or the" msgs after sleep(1)
         wait_time = 1
         soft_limit = 120
-
         while not self.handle.has_metadata():
             try:
                 sleep(1)
@@ -117,6 +115,7 @@ class Magnet2Torrent(object):
         with open(output, "wb") as outfile:
             torcontent = lt.bencode(torfile.generate())
             outfile.write(torcontent)
+
         print("Saved! Cleaning up dir: " + self.tempdir)
         self.ses.remove_torrent(self.handle)
         shutil.rmtree(self.tempdir)
@@ -134,29 +133,30 @@ def open_default_app(filepath):
         subprocess.call(('xdg-open', filepath))
 
 
-def main():
-    """main function."""
-    # parsing the argument.
+def parse_args(args):
+    """parse some commandline arguments"""
     description = "A command line tool that converts magnet links in to .torrent files"
     parser = ArgumentParser(description=description)
     parser.add_argument('-m', '--magnet', help='The magnet url', required=True)
     parser.add_argument('-o', '--output', help='The output torrent file name')
-    # rewrite file option
     parser.add_argument('--rewrite-file', help='Rewrite torrent file if exist(default)',
                         dest='rewrite_file', action='store_true')
     parser.add_argument('--no-rewrite-file',
                         help='Create a new filename if torrent exist.',
                         dest='rewrite_file', action='store_false')
     parser.set_defaults(rewrite_file=True)
-    # Skip file if exist option
     parser.add_argument('--skip-file', help='Skip file if file already exist.',
-                        dest='skip_file', action='store_true')
-    parser.set_defaults(skip_file=False)
-    # open file after creating torrent file
+                        dest='skip_file', action='store_true', default=False)
     parser.add_argument('--open-file', help='Open file after converting.',
-                        dest='open_file', action='store_true')
-    parser.set_defaults(open_file=False)
+                        dest='open_file', action='store_true', default=False)
     args = parser.parse_args(sys.argv[1:])
+    return parser.parse_args(args)
+
+
+def main():
+    """main function."""
+    # parsing the argument.
+    args = parse_args(sys.argv[1:])
     output_name = args.output
     magnet = args.magnet
 
