@@ -86,17 +86,17 @@ class Magnet2Torrent:
         print("Downloading Metadata (this may take a while)")
         # used to control "Maybe..." and "or the" msgs
         # after sleep(1)
-        x = 1
-        limit = 120
+        wait_time = 1
+        soft_limit = 120
 
         while not self.handle.has_metadata():
             try:
                 sleep(1)
-                if x > limit:
-                    print("Maybe your firewall is blocking, ")
-                    print("     or the magnet link is not right...")
-                    limit += 30
-                x += 1
+                if wait_time > soft_limit:
+                    print("Download is taking a long time, maybe there is an "
+                          "issue with the magnet link or your network connection")
+                    soft_limit += 30
+                wait_time += 1
             except KeyboardInterrupt:
                 print("Aborting...")
                 self.ses.pause()
