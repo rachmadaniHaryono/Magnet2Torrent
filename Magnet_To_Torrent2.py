@@ -36,7 +36,7 @@ except ImportError:
 import libtorrent as lt
 
 
-class Magnet2Torrent:
+class Magnet2Torrent(object):
     """class for converter from magnet link to torrent."""
 
     def __init__(self, magnet, output_name=None):
@@ -47,17 +47,13 @@ class Magnet2Torrent:
         Raises:
             ValueError: if input is not valid this error will be raise
         """
-        if output_name and \
-                not pt.isdir(output_name) and \
-                not pt.isdir(pt.dirname(pt.abspath(output_name))):
+        if (output_name and not pt.isdir(output_name) and
+                not pt.isdir(pt.dirname(pt.abspath(output_name)))):
             raise ValueError("Invalid output folder: " + pt.dirname(pt.abspath(output_name)))
         self.output_name = output_name
-        # create tempdir
+
         self.tempdir = tempfile.mkdtemp()
-        # create session
         self.ses = lt.session()
-        # one could want to set this
-        # ses.listen_on(6881, 6882)
 
         # add 'url'. for add_torrent()
         params = {
@@ -118,10 +114,9 @@ class Magnet2Torrent:
                 output = pt.abspath(self.output_name)
 
         print("Saving torrent file here : " + output + " ...")
-        # torcontent = lt.bencode(torfile.generate())  # not used
-        f = open(output, "wb")
-        f.write(lt.bencode(torfile.generate()))
-        f.close()
+        with open(output, "wb") as outfile:
+            torcontent = lt.bencode(torfile.generate())
+            outfile.write(torcontent)
         print("Saved! Cleaning up dir: " + self.tempdir)
         self.ses.remove_torrent(self.handle)
         shutil.rmtree(self.tempdir)
