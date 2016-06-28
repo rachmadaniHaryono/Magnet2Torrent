@@ -129,7 +129,7 @@ class Magnet2Torrent:
         return output
 
 
-def open_file(filepath):
+def open_default_app(filepath):
     """open filepath with default application for each operating system."""
     if sys.platform.startswith('darwin'):
         subprocess.call(('open', filepath))
@@ -178,7 +178,7 @@ def main():
         print('File [{}] is already exist.'.format(output_name))
         # still open file if file already existed.
         if args.open_file:
-            open_file(output_name)
+            open_default_app(output_name)
         return
 
     # create fullname if file exist.
@@ -203,7 +203,7 @@ def main():
     conv.run()
 
     if args.open_file:
-        open_file(output_name)
+        open_default_app(output_name)
 
 
 if __name__ == "__main__":
