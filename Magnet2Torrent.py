@@ -21,10 +21,8 @@ Created on Apr 19, 2012 @author: dan, Faless
 
 """
 
-import os
 import os.path as pt
 import shutil
-import subprocess
 import sys
 import tempfile
 from argparse import ArgumentParser
@@ -126,6 +124,9 @@ class Magnet2Torrent(object):
 
 def open_default_app(filepath):
     """open filepath with default application for each operating system."""
+    import os
+    import subprocess
+
     if sys.platform.startswith('darwin'):
         subprocess.call(('open', filepath))
     elif os.name == 'nt':
