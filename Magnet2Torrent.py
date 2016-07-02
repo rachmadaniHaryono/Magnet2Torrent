@@ -153,7 +153,6 @@ def parse_args(args):
                         dest='skip_file', action='store_true', default=False)
     parser.add_argument('--open-file', help='Open file after converting.',
                         dest='open_file', action='store_true', default=False)
-    args = parser.parse_args(sys.argv[1:])
     return parser.parse_args(args)
 
 
