@@ -34,9 +34,14 @@ Optional arguments:
     --skip-file           Skip file if it already exists.
     --open-file           Open file after converting.
 
-## Example
 
-    python Magnet2Torrent.py -m "magnet:?xt=urn:btih:49fbd26322960d982da855c54e36df19ad3113b8&dn=ubuntu-12.04-desktop-i386.iso&tr=udp%3A%2F%2Ftracker.openbittorrent.com" -o ubunut12-04.iso
+### Example:
+
+```bash
+python Magnet2Torrent.py \ 
+-m "magnet:?xt=urn:btih:49fbd26322960d982da855c54e36df19ad3113b8&dn=ubuntu-12.04-desktop-i386.iso&tr=udp%3A%2F%2Ftracker.openbittorrent.com" \
+-o ubunut12-04.iso
+```
 
 ## Licenses
 All code is licensed under the [GPL version 3](http://www.gnu.org/licenses/gpl.html)
