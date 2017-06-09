@@ -21,6 +21,7 @@ Created on Apr 19, 2012 @author: dan, Faless
 
 """
 
+import logging
 import os.path as pt
 import shutil
 import sys
@@ -173,7 +174,7 @@ def main():
                 output_name = unquote(output_name)
             output_name += '.torrent'
         except IndexError:
-            pass
+            logging.error('magnet: {}'.format(magnet))
 
     # return if user wants to skip existing file.
     if output_name is not None and pt.isfile(output_name) and args.skip_file:
