@@ -143,7 +143,7 @@ def parse_args(args):
     parser.add_argument('-m', '--magnet', help='The magnet url', required=True)
     parser.add_argument('-o', '--output', help='The output torrent file name')
     parser.add_argument('--rewrite-file',
-                        help='Rewrite torrent file if already exists(default)',
+                        help='Rewrite torrent file if it already exists(default)',
                         dest='rewrite_file', action='store_true')
     parser.add_argument('--no-rewrite-file',
                         help='Create a new filename if torrent exists.',
