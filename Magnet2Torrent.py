@@ -169,7 +169,7 @@ def main():
     if output_name is None:
         try:
             output_name = magnet.split('&dn=')[1].split('&tr')[0]
-            if '%' in output_name:
+            if '%' in output_name or '+' in output_name:
                 output_name = unquote(output_name)
             output_name += '.torrent'
         except IndexError:
