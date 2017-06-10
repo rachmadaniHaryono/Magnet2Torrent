@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """convert magnet link to torrent file.
 
 Created on Apr 19, 2012 @author: dan, Faless
@@ -28,9 +28,9 @@ import tempfile
 from argparse import ArgumentParser
 from time import sleep
 try:
-    from urllib.parse import unquote
+    from urllib.parse import unquote_plus
 except ImportError:
-    from urllib import unquote
+    from urllib import unquote_plus
 import libtorrent as lt
 
 
@@ -90,7 +90,7 @@ class Magnet2Torrent(object):
                     soft_limit += 30
                 wait_time += 1
             except KeyboardInterrupt:
-                print("Aborting...")
+                print("\nAborting...")
                 self.ses.pause()
                 print("Cleanup dir " + self.tempdir)
                 shutil.rmtree(self.tempdir)
@@ -166,14 +166,13 @@ def main():
 
     # guess the name if output name is not given.
     # in a magnet link it is between '&dn' and '&tr'
-    if output_name is None:
-        try:
+    try:
+        if output_name is None:
             output_name = magnet.split('&dn=')[1].split('&tr')[0]
-            if '%' in output_name:
-                output_name = unquote(output_name)
+            output_name = unquote_plus(output_name)
             output_name += '.torrent'
-        except IndexError:
-            pass
+    except IndexError:
+        pass
 
     # return if user wants to skip existing file.
     if output_name is not None and pt.isfile(output_name) and args.skip_file:
@@ -197,8 +196,8 @@ def main():
         output_name = new_output_name
 
     # encode magnet link if it's url decoded.
-    if magnet != unquote(magnet):
-        magnet = unquote(magnet)
+    if magnet != unquote_plus(magnet):
+        magnet = unquote_plus(magnet)
 
     conv = Magnet2Torrent(magnet, output_name)
     conv.run()
